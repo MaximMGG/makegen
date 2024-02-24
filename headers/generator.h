@@ -24,6 +24,7 @@
 
 
 void Generator_init();
-
+void Generator_free();
+void Generator_setMakeflag(int argc, char **argv);
 
 #endif //_GENERATIR_H_
