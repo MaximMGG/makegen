@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <sys/stat.h>
 #include <util/m_list.h>
 
 static char generator_type;
@@ -46,3 +47,28 @@ void Generator_setMakeflag(int argc, char **argv) {
     }
 }
 
+void Generator_get_sources(char *path) {
+    DIR *dir = opendir(path);
+    struct dirent *d;
+    struct stat s;
+    char buf[200];
+    memset(buf, 0, 200);
+    strcpy(buf, path);
+    int offset = strlen(path);
+
+    while((d = readdir(dir))) {
+        strcpy(buf + offset, d->d_name);
+
+        if (stat(buf, &s) != -1) {
+            if (S_ISREG(s.st_mode)) {
+                if(s.st_mode & S_IXUSR) {
+
+                } else {
+                    list_add(src, buf);
+                }
+            } else if (S_ISDIR(s.st_mode)) {
+                Generator_get_sources(buf);
+            }
+        }
+    }
+}
