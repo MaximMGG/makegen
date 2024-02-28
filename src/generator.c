@@ -64,10 +64,21 @@ void Generator_get_sources(char *path) {
                 if(s.st_mode & S_IXUSR) {
 
                 } else {
-                    list_add(src, buf);
+                    str *temp = newstr(buf);
+                    if (str_end_with(temp, ".c"))
+                        list_add(src, buf);
+                    str_free(temp);
                 }
             } else if (S_ISDIR(s.st_mode)) {
-                Generator_get_sources(buf);
+                str *temp = newstr(buf);
+                if (str_end_with(temp, ".") || str_end_with(temp, "..") || str_end_with(temp, ".git")) {
+                } else {
+                    str *f = newstr("/");
+                    str_concat(temp, f);
+                    Generator_get_sources(temp->str);
+                    str_free(f);
+                }
+                str_free(temp);
             }
         }
     }
