@@ -9,14 +9,7 @@
 static char *make_content = NULL;
 List *src = NULL;
 
-struct Make_flags_s{
-    str *binary_name;
-    char compiler[5];
-    List *warnings;
-    List *libs;
-    char debug[3];
-    int generator_type;
-} Make_flags;
+static struct Make_flags_s Make_flags;
 
 
 void Generator_init() {
@@ -62,7 +55,7 @@ void Generator_setMakeflag(List *args) {
         if (strcmp(temp, "-c") == 0) {
             strncpy(Make_flags.compiler, list_get(args, i + 1), 4);
             i++;
-        } else if (strcmp(temp, "-w")) {
+        } else if (strcmp(temp, "-w") == 0) {
             Make_flags.warnings = list_create(0, M_STRING);
             temp = list_get(args, i + 1);
             while(!str_is_flag(temp)) {
@@ -73,7 +66,7 @@ void Generator_setMakeflag(List *args) {
                     break;
                 }
             }
-        } else if (strcmp(temp, "-g")) {
+        } else if (strcmp(temp, "-g") == 0) {
             char *b = list_get(args, i + 1);
             if (strcmp(b, "all")) {
                 Make_flags.generator_type = GENERATE_WHOLLE_APP;
@@ -82,9 +75,9 @@ void Generator_setMakeflag(List *args) {
             } else {
                 Make_flags.generator_type = GENERATE_WHOLLE_APP;
             }
-        } else if (strcmp(temp, "-d")) {
+        } else if (strcmp(temp, "-d") == 0) {
             strcpy(Make_flags.debug, "-g");
-        } else if (strcmp(temp, "-l")) {
+        } else if (strcmp(temp, "-l") == 0) {
             temp = list_get(args, i + 1);
             Make_flags.libs = list_create(0, M_STRING);
             while(!str_is_flag(temp)) {
@@ -95,7 +88,7 @@ void Generator_setMakeflag(List *args) {
                     break;
                 }
             }
-        } else if (strcmp(temp, "-n")) {
+        } else if (strcmp(temp, "-n") == 0) {
             Make_flags.binary_name = newstr(list_get(args, i + 1));
         }
     }
@@ -185,33 +178,31 @@ void Generator_generate() {
         fprintf(stderr, "Do not found source files\n");
         exit(1);
     }
+    char buf[2000];
     str *libs = libs_str();
     str *warnings = warnings_str();
-    int total_len = source->len;
-    total_len += libs == NULL ? 0 : libs->len;
-    total_len += warnings == NULL ? 0 : warnings->len;
-    total_len += strlen(MAKE_MSG);
-    total_len += Make_flags.binary_name->len;
-    total_len += 10;
-
-    char buf[total_len];
-
-    snprintf(buf, total_len, MAKE_MSG, 
-                Make_flags.binary_name->str, 
-                Make_flags.compiler, 
-                Make_flags.debug[0] == 0 ? "": "-g", 
-                warnings == NULL ? "" : warnings->str, 
-                libs == NULL ? "" : libs->str,
-                source->str);
-
     FILE *f = fopen("Makefile", "w");
+    str *msg = newstr("");
 
-    fputs(buf, f);
+    snprintf(buf, 2000, G_BINARY, Make_flags.binary_name->str);
+    msg = str_append(msg, buf);
+    snprintf(buf, 2000, G_CC, Make_flags.compiler);
+    msg = str_append(msg, buf);
+    snprintf(buf, 2000, G_FLAGS, warnings == NULL ? "" : warnings->str);
+    msg = str_append(msg, buf);
+    snprintf(buf, 2000, G_DEBUG, Make_flags.debug);
+    msg = str_append(msg, buf);
+    snprintf(buf, 2000, G_LIBS, libs == NULL ? "" : libs->str);
+    msg = str_append(msg, buf);
+    snprintf(buf, 2000, G_SRC, source->str);
+    msg = str_append(msg, buf);
+    msg = str_append(msg, MAKE_MSG);
+
+    fputs(msg->str, f);
 
     fclose(f);
     str_free(libs);
     str_free(warnings);
     str_free(source);
-
-
+    str_free(msg);
 }

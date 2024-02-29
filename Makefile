@@ -2,18 +2,16 @@ BINARY = a.out
 CC = gcc
 FLAGS = 
 DEBUG = 
-LIBS = 
-SRC = ./src/generator.c ./src/test.c
+LIBS =  -l_util
+SRC = ./src/genapp.c ./src/generator.c
 OBJ = $(patsubst %.c, %.o, $(SRC))
 
 all: $(BINARY)
 
 $(BINARY): $(OBJ)
-   $(CC) $(FLAGS) -o $(BINARY) $^ $(DEBUG) $(LIBS)
-
+	$(CC) -o $(BINARY) $^ $(FLAGS) $(LIBS) $(DEBUG)
 %.o: %.c
-   $(CC) -o $@ -c $< $(DEBUG)
-
+	$(CC) -o $@ -c $< $(FLAGS) $(LIBS) $(DEBUG)
 clean: 
-   rm $(BINARY) $(OBJ)
-
+	rm $(BINARY) $(OBJ)
+#r
