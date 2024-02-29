@@ -41,47 +41,65 @@ void Generator_free() {
     }
 }
 
+static boolean str_is_flag(char *s) {
+
+    int len = strlen(s);
+    if (len == 2 && s[0] == '-') return true;
+
+    return false;
+}
+
 //TODO(Maxim) need to continue setting flags
-void Generator_setMakeflag(int argc, char **argv) { 
+void Generator_setMakeflag(List *args) { 
     Make_flags.generator_type = 0;
     Make_flags.warnings = NULL;
     Make_flags.compiler[0] = 0;
     Make_flags.libs = NULL;
     Make_flags.debug[0] = 0;
-    for(int i = 1; i < argc; i++) {
-        if (argv[i][0] == '-') {
-            switch(argv[i][1]) {
-                case 'c': {
-                    strncpy(Make_flags.compiler, argv[i + 1], 4);
-                } break;
-                case 'w': {
-                    Make_flags.warnings = list_create(0, M_STRING);
-                    for(int j = i + 1; j < argc || argv[j][0] != '-'; j++) {
-                        list_add(Make_flags.warnings, argv[j]);
-                    }
-                } break;
-                case 'g': {
-                    if (strcmp(argv[i], "all") == 0) {
-                        Make_flags.generator_type = GENERATE_WHOLLE_APP;
-                    } else if (strcmp(argv[i + 1], "cur") == 0) {
-                        Make_flags.generator_type = GENERATE_CUR_DIR;
-                    }
-                } break;
-                case 'd': {
-                    strncpy(Make_flags.debug, "-g", 3);
-                } break;
-                case 'l': {
-                    Make_flags.warnings = list_create(0, M_STRING);
-                    for(int j = i + 1; j < argc || argv[j][0] != '-'; j++) {
-                        list_add(Make_flags.libs, argv[j]);
-                    }
-                } break;
-                case 'n': {
-                    Make_flags.binary_name = newstr(argv[i + 1]); 
-                } break;
+    for(int i = 1; i < args->len; i++) {
+        char *temp = list_get(args, i);
+
+        if (strcmp(temp, "-c") == 0) {
+            strncpy(Make_flags.compiler, list_get(args, i + 1), 4);
+            i++;
+        } else if (strcmp(temp, "-w")) {
+            Make_flags.warnings = list_create(0, M_STRING);
+            temp = list_get(args, i + 1);
+            while(!str_is_flag(temp)) {
+                list_add(Make_flags.warnings, temp);
+                i++;
+                temp = list_get(args, i + 1);
+                if (temp == NULL) {
+                    break;
+                }
             }
+        } else if (strcmp(temp, "-g")) {
+            char *b = list_get(args, i + 1);
+            if (strcmp(b, "all")) {
+                Make_flags.generator_type = GENERATE_WHOLLE_APP;
+            } else if (strcmp(b, "cur")) {
+                Make_flags.generator_type = GENERATE_CUR_DIR;
+            } else {
+                Make_flags.generator_type = GENERATE_WHOLLE_APP;
+            }
+        } else if (strcmp(temp, "-d")) {
+            strcpy(Make_flags.debug, "-g");
+        } else if (strcmp(temp, "-l")) {
+            temp = list_get(args, i + 1);
+            Make_flags.libs = list_create(0, M_STRING);
+            while(!str_is_flag(temp)) {
+                list_add(Make_flags.libs, temp);
+                i++;
+                temp = list_get(args, i + 1);
+                if (temp == NULL) {
+                    break;
+                }
+            }
+        } else if (strcmp(temp, "-n")) {
+            Make_flags.binary_name = newstr(list_get(args, i + 1));
         }
     }
+
     if (Make_flags.generator_type == 0) Make_flags.generator_type = GENERATE_WHOLLE_APP;
     if (Make_flags.compiler[0] == 0) strncpy(Make_flags.compiler, "gcc", 5);
     if (Make_flags.binary_name == NULL) Make_flags.binary_name = newstr("a.out");

@@ -1,17 +1,19 @@
+BINARY = a.out
 CC = gcc
-BINARY = makegen
-FLAGS = -g
-LIBS = -l_util
-
-SRC = src/generator.c src/test.c
+FLAGS = 
+DEBUG = 
+LIBS = 
+SRC = ./src/generator.c ./src/test.c
 OBJ = $(patsubst %.c, %.o, $(SRC))
 
+all: $(BINARY)
 
 $(BINARY): $(OBJ)
-	$(CC) -o $(BINARY) $^ $(FLAGS) $(LIBS)
+   $(CC) $(FLAGS) -o $(BINARY) $^ $(DEBUG) $(LIBS)
 
 %.o: %.c
-	$(CC) -o $@ -c $< $(FLAGS) $(LIBS)
+   $(CC) -o $@ -c $< $(DEBUG)
 
-clean:
-	rm $(BINARY) $(OBJ)
+clean: 
+   rm $(BINARY) $(OBJ)
+

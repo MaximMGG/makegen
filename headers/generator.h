@@ -31,7 +31,7 @@ extern List *src;
 
 void Generator_init();
 void Generator_free();
-void Generator_setMakeflag(int argc, char **argv);
+void Generator_setMakeflag(List *args);
 void Generator_get_sources(char *path);
 void Generator_generate();
 
