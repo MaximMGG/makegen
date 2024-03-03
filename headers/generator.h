@@ -4,6 +4,8 @@
 #include <util/m_list.h>
 #include <util/m_string.h>
 
+#define DEFAULT_PATH "."
+
 #define GENERATE_C 1
 #define GENERATE_CPP 2
 
@@ -43,6 +45,7 @@ void Generator_init();
 void Generator_free();
 void Generator_setMakeflag(List *args);
 void Generator_get_sources(char *path);
+void Generator_update_sources();
 void Generator_generate();
 
 #endif //_GENERATIR_H_

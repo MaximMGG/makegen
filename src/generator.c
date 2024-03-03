@@ -6,11 +6,12 @@
 #include <sys/stat.h>
 #include <util/m_list.h>
 
+#define GEN_ERROR(msg) fprintf(stderr, "func - %s, line -%d, msg - %s\n", __FUNCTION__, __LINE__, msg)
+
 static char *make_content = NULL;
 List *src = NULL;
 
 static struct Make_flags_s Make_flags;
-
 
 void Generator_init() {
     src = list_create(0, M_STRING);
@@ -90,6 +91,8 @@ void Generator_setMakeflag(List *args) {
             }
         } else if (strcmp(temp, "-n") == 0) {
             Make_flags.binary_name = newstr(list_get(args, i + 1));
+        } else if (strcmp(temp, "-us") == 0) {
+            Generator_update_sources();
         }
     }
 
@@ -170,6 +173,51 @@ static str *warnings_str() {
         warnings = str_append(warnings, list_get(Make_flags.warnings, i));
     }
     return warnings;
+}
+
+static boolean old_str_starts_with(char *d, char *pattern) {
+
+    int plen = strlen(pattern);
+
+    for(int i = 0; i < plen; i++) {
+        if (d[i] != pattern[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void Generator_update_sources() {
+    Generator_get_sources(DEFAULT_PATH);
+
+    char buf_source[512];
+    str *src_str = source_str();
+    snprintf(buf_source, 512, G_SRC, src_str->str);
+    str_free(src_str);
+
+    FILE *mf = fopen("Makefile", "r+");
+    List *fcon = list_create(0, M_STRING);
+
+    if (mf == NULL) {
+        GEN_ERROR("Makefile doesn't exist");
+        Generator_free();
+        exit(EXIT_FAILURE);
+    }
+
+    char buf[512];
+    memset(buf, 0, 512);
+
+    while(!feof(mf)) {
+        fgets(buf, 512, mf);
+        if (old_str_starts_with(buf, "SRC")) {
+            list_add(fcon, buf_source);
+            continue;
+        }
+        list_add(fcon, buf);
+    }
+
+    fclose(mf);
+    list_free_all(fcon);
 }
 
 void Generator_generate() {

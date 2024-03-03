@@ -1,4 +1,4 @@
-BINARY = a.out
+BINARY = makegen
 CC = gcc
 FLAGS = 
 DEBUG = 
