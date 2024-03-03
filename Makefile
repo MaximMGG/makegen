@@ -1,7 +1,7 @@
 BINARY = makegen
 CC = gcc
 FLAGS = 
-DEBUG = 
+DEBUG = -g 
 LIBS =  -l_util
 SRC = ./src/genapp.c ./src/generator.c
 OBJ = $(patsubst %.c, %.o, $(SRC))
@@ -14,4 +14,6 @@ $(BINARY): $(OBJ)
 	$(CC) -o $@ -c $< $(FLAGS) $(LIBS) $(DEBUG)
 clean: 
 	rm $(BINARY) $(OBJ)
-#r
+
+deploy:
+	sudo cp $(BINARY) /usr/sbin/

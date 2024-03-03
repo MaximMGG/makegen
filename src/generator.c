@@ -216,8 +216,17 @@ void Generator_update_sources() {
         list_add(fcon, buf);
     }
 
+    fseek(mf, 0, SEEK_SET);
+
+    for(int i = 0; i < fcon->len; i++) {
+        fputs(list_get(fcon, i), mf);
+    }
+
     fclose(mf);
     list_free_all(fcon);
+
+    Generator_free();
+    exit(EXIT_SUCCESS);
 }
 
 void Generator_generate() {

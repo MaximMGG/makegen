@@ -4,7 +4,7 @@
 #include <util/m_list.h>
 #include <util/m_string.h>
 
-#define DEFAULT_PATH "."
+#define DEFAULT_PATH "./"
 
 #define GENERATE_C 1
 #define GENERATE_CPP 2

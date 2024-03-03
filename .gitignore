@@ -1,2 +1,4 @@
 *.o
 makegen
+run.sh
+a.out
